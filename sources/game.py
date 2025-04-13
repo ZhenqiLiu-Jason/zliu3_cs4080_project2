@@ -4,6 +4,24 @@ from typing import List, Tuple, Any
 
 
 def score_combination(combo: List[Tuple[int, Any]]) -> int:
+    """
+    The following are the melds that the game recognizes.
+
+    Ones: Any die depicting a one. Worth 100 points each.
+    Fives: Any die depicting a five. Worth 50 points each.
+    Three Ones: A set of three dice depicting a one. worth 1000 points
+    Three Twos: A set of three dice depicting a two. worth 200 points
+    Three Threes: A set of three dice depicting a three. worth 300 points
+    Three Fours: A set of three dice depicting a four. worth 400 points
+    Three Fives: A set of three dice depicting a five. worth 500 points
+    Three Sixes: A set of three dice depicting a six. worth 600 points
+    Four of a kind: Any set of four dice depicting the same value. Worth 1000 points
+    Five of a kind: Any set of five dice depicting the same value. Worth 2000 points
+    Six of a kind: Any set of six dice depicting the same value. Worth 3000 points
+    Three Pairs: Any three sets of two pairs of dice. Includes having a four of a kind plus a pair. Worth 1500 points
+    Run: Six dice in a sequence (1,2,3,4,5,6). Worth 2500 points
+    """
+
     faces = [v for v, _ in combo]
     face_counts = Counter(faces)
     total_score = 0
@@ -14,7 +32,8 @@ def score_combination(combo: List[Tuple[int, Any]]) -> int:
         return 2500
 
     # Three pairs
-    if len(face_counts) == 3 and all(count == 2 for count in face_counts.values()):
+    vals = list(face_counts.values())
+    if vals.count(2) == 3 or (2 in vals and 4 in vals and len(vals) == 2):
         return 1500
 
     # 3-6 of a kind
@@ -50,13 +69,17 @@ def score_combination(combo: List[Tuple[int, Any]]) -> int:
 
 
 def get_scoring_combinations(roll: List[Tuple[int, Any]]) -> List[Tuple[List[Tuple[int, Any]], int]]:
-    """Generate all subsets of dice, score them, and return the valid ones sorted by score descending."""
+    """
+    Generate all subsets of dice, score them, and return the valid ones sorted by score descending.
+    """
+    
     results = []
     for r in range(1, len(roll) + 1):
         for subset in combinations(roll, r):
             score = score_combination(list(subset))
             if score > 0:
                 results.append((list(subset), score))
+
     # sort by score descending, then by subset size descending
     results.sort(key=lambda x: (-x[1], -len(x[0])))
     return results
