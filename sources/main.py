@@ -1,5 +1,5 @@
-from dice import *
-from game import *
+from dice import Dice, DiceSet
+from game import get_scoring_combinations
 
 
 dice_set = DiceSet(
