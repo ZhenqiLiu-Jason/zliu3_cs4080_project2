@@ -96,7 +96,13 @@ class MCTSNode:
         self.total_reward += reward
 
     def is_terminal(self) -> bool:
-        return len(self.remaining_dice) == 0
+        """
+        Terminality handled in rollout via Farkle return
+        In Farkle, There's no fixed "game-over" state at any node (like checkmate in chess).
+        Every node is potentially expandable or playable, depending 
+        on what dice get rolled or what decision is made (bank or continue).
+        """
+        return False
 
     def fully_qualified_state(self) -> Tuple:
         return (tuple(sorted(self.state)), tuple(sorted(self.remaining_dice)), self.current_bank)
