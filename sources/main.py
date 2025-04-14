@@ -1,25 +1,52 @@
+import argparse
+import random
 from mcts.searcher.mcts import MCTS
 
 from dice import Dice, DiceSet
 from mcts_farkle import FarkleState
 
-dice_list = [Dice() for _ in range(6)]
-dice_set = DiceSet(dice_list)
 
-initial_roll = dice_set.roll_all()
+def generate_dice_set():
+    return [Dice() for _ in range(6)]
 
-# Create initial state
-initial_state = FarkleState(
-    dice_list=dice_list,
-    combination=initial_roll,
-    bank=0,
-    terminal=False
-)
+def main():
+    # CLI parsing
+    parser = argparse.ArgumentParser(description="Run Farkle MCTS simulation.")
+    parser.add_argument("--time_limit", type=int, default=1000, help="Time limit for MCTS searcher in ms")
+    args = parser.parse_args()
 
-# Run MCTS to pick best action
-mcts = MCTS(iteration_limit=10000)
-best_action = mcts.search(initial_state)
+    # Automatically generate searcher name
+    searcher_name = f"mcts-{args.time_limit}ms"
+    searcher = MCTS(time_limit=args.time_limit)
 
-# Show result
-print("Initial roll:", [face for face, _ in initial_roll])
-print("Best action chosen:", best_action)
+    # Initialize game
+    dice = generate_dice_set()
+    initial_roll = [(die.roll(), die.die_id) for die in dice]
+    state = FarkleState(dice_list=dice, combination=initial_roll)
+
+    print(f"Initial roll: {[face for face, _ in initial_roll]}")
+    print(f"Using searcher: {searcher_name}")
+    turn = 0
+
+    while not state.is_terminal():
+        turn += 1
+        possible_actions = state.get_possible_actions()
+        print(f"\nTurn {turn}, {len(possible_actions)} possible actions")
+
+        action = searcher.search(initial_state=state)
+        print(f"Chosen action: {action}")
+
+        state = state.take_action(action)
+
+        if not state.is_terminal():
+            print(f"New roll: {[face for face, _ in state.combination]}")
+        else:
+            print("Turn ended. Banked score:", state.get_reward())
+
+    print("-" * 60)
+    print(f"Final banked score after {turn} turns: {state.get_reward()}")
+
+
+# Main execution
+if __name__ == "__main__":
+    main()
