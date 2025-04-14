@@ -6,13 +6,37 @@ from dice import Dice, DiceSet
 from mcts_farkle import FarkleState
 
 
-def generate_dice_set():
-    return [Dice() for _ in range(6)]
+def parse_single_weight(w_str):
+    try:
+        weights = list(map(float, w_str.split(",")))
+        if len(weights) != 6:
+            raise ValueError
+        return weights
+    except Exception:
+        raise argparse.ArgumentTypeError("Each weight entry must be 6 comma-separated numbers (e.g., 1,1,1,1,1,5)")
+
+
+def generate_dice_set(weights_list=None):
+    dice_set = []
+    weights_list = weights_list or []
+
+    for i in range(6):
+        if i < len(weights_list):
+            die = Dice(weights=weights_list[i])
+        else:
+            die = Dice()  # Fair by default
+        dice_set.append(die)
+
+    return dice_set
+
 
 def main():
     # CLI parsing
-    parser = argparse.ArgumentParser(description="Run Farkle MCTS simulation.")
-    parser.add_argument("--time_limit", type=int, default=1000, help="Time limit for MCTS searcher in ms")
+    parser = argparse.ArgumentParser(description="Run Farkle MCTS simulation with optional dice weights.")
+    parser.add_argument("--time_limit", type=int, default=1000, help="MCTS time limit in ms")
+    parser.add_argument("--weights", type=parse_single_weight, action='append',
+                        help="Comma-separated weights for a die, can be repeated up to 6 times")
+
     args = parser.parse_args()
 
     # Automatically generate searcher name
@@ -20,12 +44,17 @@ def main():
     searcher = MCTS(time_limit=args.time_limit)
 
     # Initialize game
-    dice = generate_dice_set()
+    dice = generate_dice_set(args.weights)
+    print(f"Using searcher: {searcher_name}")
+    print("Dice Probabilities:")
+    for i, die in enumerate(dice):
+        print(f"Die {die.die_id}:")
+        die.describe()
+
     initial_roll = [(die.roll(), die.die_id) for die in dice]
     state = FarkleState(dice_list=dice, combination=initial_roll)
 
     print(f"Initial roll: {[face for face, _ in initial_roll]}")
-    print(f"Using searcher: {searcher_name}")
     turn = 0
 
     while not state.is_terminal():

@@ -95,7 +95,11 @@ class FarkleAction(BaseAction):
         self.points = points
 
     def __str__(self):
-        return f"Bank({self.points})" if self.combo is None else f"Combo({self.combo}, {self.points})"
+        if self.combo is None:
+            return f"Bank({self.points})"
+        else:
+            lines = "\n".join(f"  {face} : {die_id}" for face, die_id in self.combo)
+            return f"Combo(\n{lines}\nPoints: {self.points})"
 
     def __repr__(self):
         return str(self)
