@@ -61,27 +61,26 @@ class MCTSNode:
 
     def rollout(self, dice_lookup: Dict[str, Any], combination_func) -> int:
         current_score = self.current_bank
-        dice_remaining = [dice_lookup[die_id] for die_id in self.remaining_dice]
-        dice_set = DiceSet(dice_remaining)
+        remaining_dice_ids = list(self.remaining_dice)  # Work on a copy
 
-        while True:
+        while remaining_dice_ids:
+            dice_set = DiceSet([dice_lookup[die_id] for die_id in remaining_dice_ids])
             faces = dice_set.roll_all()
+
             combos = combination_func(faces)
             if not combos:
                 return 0  # Farkle
 
+            # Greedy approach
             best_combo, points = combos[0]
             current_score += points
 
             used_ids = {die_id for _, die_id in best_combo}
-            dice_remaining = [d for d in dice_remaining if d.die_id not in used_ids]
+            remaining_dice_ids = [die_id for die_id in remaining_dice_ids if die_id not in used_ids]
 
             # Hot dice
-            if not dice_remaining:
-                dice_remaining = [dice_lookup[die_id] for die_id in self.remaining_dice]
-                dice_set = DiceSet(dice_remaining)
-            else:
-                dice_set = DiceSet(dice_remaining)
+            if not remaining_dice_ids:
+                remaining_dice_ids = list(dice_lookup.keys())
 
         return current_score
 
