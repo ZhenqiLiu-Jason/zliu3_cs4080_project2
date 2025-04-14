@@ -30,9 +30,16 @@ class FarkleState(BaseState):
         if not scoring_combos:
             return []
 
+        # HOT DICE: all dice were used
+        used_ids = {die_id for _, die_id in scoring_combos[0][0]}
+        is_hot_dice = len(used_ids) == len(self.combination)
+
         # Generate a list of actions and append a banking option
         actions = [FarkleAction(combo, points) for combo, points in scoring_combos]
-        actions.append(FarkleAction(None, scoring_combos[0][1]))
+        
+        # You always roll after a hot dice
+        if not is_hot_dice:
+            actions.append(FarkleAction(None, scoring_combos[0][1]))
 
         return actions
 
