@@ -1,21 +1,25 @@
+from mcts.searcher.mcts import MCTS
+
 from dice import Dice, DiceSet
-from game import get_scoring_combinations
+from mcts_farkle import FarkleState
 
+dice_list = [Dice() for _ in range(6)]
+dice_set = DiceSet(dice_list)
 
-dice_set = DiceSet(
-    [Dice(),
-    Dice(),
-    Dice(),
-    Dice(),
-    Dice(),
-    Dice()])
+initial_roll = dice_set.roll_all()
 
-roll = dice_set.roll_all()
-combinations = get_scoring_combinations(roll)
+# Create initial state
+initial_state = FarkleState(
+    dice_list=dice_list,
+    combination=initial_roll,
+    bank=0,
+    terminal=False
+)
 
-print("Here are the faces")
-print(f"{[face for face, addr in roll]}\n")
+# Run MCTS to pick best action
+mcts = MCTS(iteration_limit=1000)
+best_action = mcts.search(initial_state)
 
-for dice, points in combinations:
-    print(f"Combinations: {dice}, Points: {points}")
-
+# Show result
+print("Initial roll:", initial_roll)
+print("Best action chosen:", best_action)
