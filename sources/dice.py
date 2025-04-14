@@ -1,17 +1,20 @@
 import random
+import uuid
 
 class Dice:
     """
     This Dice class represents a dice, which can take up any faces and weights.
+    Each die also has a persistent unique ID for serialization.
     """
 
-    def __init__(self, faces=(1,2,3,4,5,6), weights=None):
+    def __init__(self, faces=(1,2,3,4,5,6), weights=None, die_id=None):
         """
         Create a dice with custom faces and weights.
         Default is a fair 6-faced dice.
         """
         self.faces = faces
         self.weights = weights or [1] * len(faces)
+        self.die_id = die_id or str(uuid.uuid4())
 
     def roll(self):
         return random.choices(self.faces, weights=self.weights, k=1)[0]
@@ -40,5 +43,5 @@ class DiceSet:
         self.dice = dice_list
 
     def roll_all(self):
-        return [(die.roll(), die) for die in self.dice]
+        return [(die.roll(), die.die_id) for die in self.dice]
 
