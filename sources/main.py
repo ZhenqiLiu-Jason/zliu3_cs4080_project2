@@ -17,9 +17,9 @@ initial_state = FarkleState(
 )
 
 # Run MCTS to pick best action
-mcts = MCTS(iteration_limit=1000)
+mcts = MCTS(iteration_limit=10000)
 best_action = mcts.search(initial_state)
 
 # Show result
-print("Initial roll:", initial_roll)
+print("Initial roll:", [face for face, _ in initial_roll])
 print("Best action chosen:", best_action)

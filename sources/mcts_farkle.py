@@ -1,4 +1,4 @@
-from mcts.base.base import BaseState
+from mcts.base.base import BaseState, BaseAction
 from typing import List, Tuple, Dict, Optional, Any
 
 from dice import Dice, DiceSet
@@ -25,10 +25,20 @@ class FarkleState(BaseState):
             return []
 
         scoring_combos = get_scoring_combinations(self.combination)
-        return scoring_combos + [(None, scoring_combos[0][1])]
+
+        # Farkled
+        if not scoring_combos:
+            return []
+
+        # Generate a list of actions and append a banking option
+        actions = [FarkleAction(combo, points) for combo, points in scoring_combos]
+        actions.append(FarkleAction(None, scoring_combos[0][1]))
+
+        return actions
 
     def take_action(self, action):
-        combo, points = action
+        combo = action.combo 
+        points = action.points
 
         # Bank now (stop the turn and keep the bank)
         if combo is None:
@@ -73,3 +83,25 @@ class FarkleState(BaseState):
 
     def get_reward(self) -> float:
         return self.bank
+
+
+class FarkleAction(BaseAction):
+    def __init__(self, combo: Optional[List[Tuple[int, str]]], points: int):
+        """
+        combo: list of (face, die_id), or None to represent 'bank now'
+        points: points earned from this action
+        """
+        self.combo = tuple(combo) if combo is not None else None
+        self.points = points
+
+    def __str__(self):
+        return f"Bank({self.points})" if self.combo is None else f"Combo({self.combo}, {self.points})"
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other):
+        return isinstance(other, FarkleAction) and self.combo == other.combo and self.points == other.points
+
+    def __hash__(self):
+        return hash((self.combo, self.points))
