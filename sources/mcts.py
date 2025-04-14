@@ -9,6 +9,11 @@ class MCTS:
         self.combination_func = combination_func
 
     def run_search(self, iterations=1000):
+        if not self.root.untried_combinations:
+            self.root.untried_combinations = [
+                combo for combo, _ in self.combination_func(self.root.state)
+            ]
+
         for _ in range(iterations):
             node = self.tree_policy()
             reward = node.rollout(self.dice_lookup, self.combination_func)
